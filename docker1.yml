@@ -1,0 +1,36 @@
+--- # Docker installation on Labs servers
+- hosts: containers
+  tasks:
+  - name: Add repository
+    yum_repository:
+      name: epel
+      description: EPEL YUM repo
+      baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+    yum_repository:
+      name: docker
+      description: Docker Fedora Repo
+      baseurl: https://yum.dockerproject.org/repo/main/centos/7/
+      gpgkey: http://yum.dockerproject.org/gpg
+      gpgcheck: yes
+  
+  - name: Install of Docker
+    yum: pkg=docker-engine state=installed update_cache=true
+  - name: Enable and Start Docker
+    systemd:
+      name: docker
+      enabled: yes
+      state: started
+  - name: Add users to docker group
+    user:
+      name: nik
+      groups: docker
+      append: yes
+  - name: install pip module docker-py
+    pip:
+      name: docker-py
+  - name: Add images to Docker
+    docker_image:  
+      name: centos:centos6
+  - name: Add nginx image to Docker
+    docker_image:
+      name: nginx:latest
