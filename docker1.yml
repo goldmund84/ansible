@@ -31,9 +31,10 @@
   - name: install pip module docker-py
     pip:
       name: docker-py
-  - name: Add images to Docker
+  - name: Remove old images from Docker
     docker_image:  
       name: centos:centos6
+      state: absent
   - name: Add nginx image to Docker
     docker_image:
       name: nginx:latest
