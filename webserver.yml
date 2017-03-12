@@ -15,7 +15,7 @@
     register: result
   - debug: var=result
   - name: install some packages
-    yum: pkg={{ package }} state=latest
+    yum: pkg={{ item }} state=latest
     with_items:
       - telnet
       - lynx
