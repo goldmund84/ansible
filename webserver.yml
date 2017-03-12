@@ -14,10 +14,12 @@
     command: systemctl status httpd
     register: result
   - debug: var=result
-  - name: install telnet
-    yum: pkg=telnet state=installed
-  - name: install lynx
-    yum: pkg=lynx state=latest
+  - name: install some packages
+    yum: pkg={{ package }} state=latest
+    with_items:
+      - telnet
+      - lynx
+      - elinks
   - name: log all the packegas install on the system
     raw: yum list installed > /home/nik/installed.log
   - name: date/time stamp for when playbook ends
