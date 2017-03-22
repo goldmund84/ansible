@@ -1,0 +1,49 @@
+--- #
+- hosts: containers
+  user: nik
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  tasks:
+  - name: install mysql client
+    yum: pkg=mysql state=installed update_cache=true
+  - name: Pull an image from docker Hub
+    docker_image:
+      name: mysql
+  - name: Create a dirs on a Docker Host
+    file:
+      path: '{{ item.path }}'
+      state: directory
+      mode: 0755
+    with_items:
+      - { path: '/opt/mysql/master'}
+      - { path: '/opt/mysql/slave'}
+  - name: Create conf files for MySQL 
+    template:
+      src: '{{ item.src }}'
+      dest: '{{ item.dest }}'
+      owner: root
+      group: root
+      mode: 0644
+    with_items:
+      - { src: 'templates/mysql-master.cnf', dest: '/opt/mysql/master/mysql-master.cnf' }
+      - { src: 'templates/mysql-slave.cnf', dest: '/opt/mysql/slave/mysql-slave.cnf' }
+
+  - name: Run Docker Container with MySQL
+    docker_container:
+      name: '{{ item.name }}'
+      image: "mysql:latest"
+      volumes: '{{ item.vol }}'
+      env:
+        MYSQL_ROOT_PASSWORD=password
+      interactive: True
+      tty: True
+    with_items:
+      - { name: 'db_master', vol: '/opt/mysql/master:/etc/mysql/conf.d' }
+      - { name: 'db_slave', vol: '/opt/mysql/slave:/etc/mysql/conf.d' }
+#- start mysql server instance with parameters
+#  - mount volume /etc/mysql/conf.d
+#  - set master role
+#- create empty database on master
+
+
