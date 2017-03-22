@@ -1,0 +1,32 @@
+--- #
+- hosts: snmpd-hosts
+  user: nik
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  tasks:
+  - name: install snmpd service
+    apt: pkg=snmpd state=installed update_cache=true
+
+  - name: enable and start snmpd
+    service: name=snmpd state=restarted enabled=yes
+
+  - name: Stat config file
+    stat: path=/etc/snmp/snmpd.conf
+    register: conf_stat
+
+  - name: Backup default config file
+    command: mv /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.ans
+    when: conf_stat.stat.exists
+
+  - name: Copy config file
+    template:
+      src: 'templates/snmpd.conf'
+      dest: '/etc/snmp/snmpd.conf'
+      owner: root
+      group: root
+      mode: 0644
+    notify: restart snmpd
+  handlers:
+    - name: restart snmpd
+      service: name=snmpd state=restarted
